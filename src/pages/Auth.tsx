@@ -20,6 +20,7 @@ const Auth = () => {
   const [phoneNumber, setPhoneNumber] = useState("+91");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   
   const role = searchParams.get("role") || "resident";
 
@@ -30,6 +31,13 @@ const Auth = () => {
         navigate("/dashboard");
       }
     });
+
+    // Load saved email if exists
+    const savedEmail = localStorage.getItem("saved_email");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
   }, [navigate]);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
@@ -43,6 +51,13 @@ const Auth = () => {
       });
 
       if (error) throw error;
+
+      // Save credentials if "remember me" is checked
+      if (rememberMe) {
+        localStorage.setItem("saved_email", email);
+      } else {
+        localStorage.removeItem("saved_email");
+      }
 
       toast({
         title: "Welcome back!",
@@ -170,6 +185,18 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="remember"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-input"
+                  />
+                  <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
+                    Remember me
+                  </Label>
                 </div>
                 <Button
                   type="submit"
