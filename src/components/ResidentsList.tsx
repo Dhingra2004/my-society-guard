@@ -24,7 +24,15 @@ const ResidentsList = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, flat_number, phone_number, created_at")
+        .select(`
+          id, 
+          full_name, 
+          flat_number, 
+          phone_number, 
+          created_at,
+          user_roles!inner(role)
+        `)
+        .eq("user_roles.role", "resident")
         .order("flat_number", { ascending: true });
 
       if (error) throw error;
