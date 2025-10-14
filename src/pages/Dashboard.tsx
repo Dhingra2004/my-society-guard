@@ -5,9 +5,10 @@ import { User, Session } from "@supabase/supabase-js";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import GuardDashboard from "@/components/dashboard/GuardDashboard";
 import ResidentDashboard from "@/components/dashboard/ResidentDashboard";
+import SuperAdminDashboard from "@/components/dashboard/SuperAdminDashboard";
 import { Loader2 } from "lucide-react";
 
-type UserRole = "admin" | "guard" | "resident" | null;
+type UserRole = "admin" | "guard" | "resident" | "super_admin" | null;
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -83,6 +84,7 @@ const Dashboard = () => {
 
   return (
     <>
+      {userRole === "super_admin" && <SuperAdminDashboard user={user} />}
       {userRole === "admin" && <AdminDashboard user={user} />}
       {userRole === "guard" && <GuardDashboard user={user} />}
       {userRole === "resident" && <ResidentDashboard user={user} />}
