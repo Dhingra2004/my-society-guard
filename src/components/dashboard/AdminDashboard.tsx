@@ -10,6 +10,9 @@ import { useNavigate } from "react-router-dom";
 import { LogOut, Users, AlertCircle, Bell, BarChart3 } from "lucide-react";
 import NoticeBoard from "@/components/NoticeBoard";
 import ComplaintsList from "@/components/ComplaintsList";
+import ResidentsList from "@/components/ResidentsList";
+import VisitorsList from "@/components/VisitorsList";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface AdminDashboardProps {
   user: User;
@@ -81,15 +84,25 @@ const AdminDashboard = ({ user }: AdminDashboardProps) => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-card shadow-elevated">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Residents</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalResidents}</div>
-            </CardContent>
-          </Card>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Card className="bg-gradient-card shadow-elevated cursor-pointer hover:shadow-glow transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Residents</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.totalResidents}</div>
+                </CardContent>
+              </Card>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Residents Directory</DialogTitle>
+              </DialogHeader>
+              <ResidentsList />
+            </DialogContent>
+          </Dialog>
 
           <Card className="bg-gradient-card shadow-elevated">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -124,9 +137,10 @@ const AdminDashboard = ({ user }: AdminDashboardProps) => {
 
         {/* Main Content */}
         <Tabs defaultValue="complaints" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
             <TabsTrigger value="complaints">Complaints</TabsTrigger>
             <TabsTrigger value="notices">Notices</TabsTrigger>
+            <TabsTrigger value="visitors">Visitors</TabsTrigger>
           </TabsList>
 
           <TabsContent value="complaints" className="space-y-6">
@@ -135,6 +149,10 @@ const AdminDashboard = ({ user }: AdminDashboardProps) => {
 
           <TabsContent value="notices" className="space-y-6">
             <NoticeBoard isAdmin={true} />
+          </TabsContent>
+
+          <TabsContent value="visitors" className="space-y-6">
+            <VisitorsList />
           </TabsContent>
         </Tabs>
       </div>

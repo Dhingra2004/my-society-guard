@@ -87,14 +87,15 @@ const GuardDashboard = ({ user }: GuardDashboardProps) => {
         .from("profiles")
         .select("id")
         .eq("flat_number", formData.flatNumber)
-        .single();
+        .maybeSingle();
 
-      if (profileError) {
+      if (profileError || !profile) {
         toast({
           title: "Error",
           description: "No resident found with this flat number",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
