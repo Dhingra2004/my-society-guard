@@ -188,6 +188,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      lookup_resident_id_by_flat: {
+        Args: { _flat: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "guard" | "resident"

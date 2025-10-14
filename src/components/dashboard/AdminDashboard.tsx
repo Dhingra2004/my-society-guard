@@ -12,7 +12,7 @@ import NoticeBoard from "@/components/NoticeBoard";
 import ComplaintsList from "@/components/ComplaintsList";
 import ResidentsList from "@/components/ResidentsList";
 import VisitorsList from "@/components/VisitorsList";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface AdminDashboardProps {
   user: User;
@@ -99,6 +99,9 @@ const AdminDashboard = ({ user }: AdminDashboardProps) => {
             <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Residents Directory</DialogTitle>
+                <DialogDescription id="residents-dialog-desc">
+                  This is a list of all users with the resident role, including their flat numbers.
+                </DialogDescription>
               </DialogHeader>
               <ResidentsList />
             </DialogContent>

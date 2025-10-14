@@ -82,16 +82,19 @@ const GuardDashboard = ({ user }: GuardDashboardProps) => {
     setIsLoading(true);
 
     try {
-      // First, get the resident's user_id based on flat number
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("flat_number", formData.flatNumber)
-        .maybeSingle();
+      // Resolve resident id securely via RPC (bypasses RLS on profiles for guards)
+      const { data: residentId, error: rpcError } = await supabase.rpc(
+        "lookup_resident_id_by_flat",
+        { _flat: formData.flatNumber }
+      );
 
-      if (profileError || !profile) {
+      if (rpcError) {
+        throw rpcError;
+      }
+
+      if (!residentId) {
         toast({
-          title: "Error",
+          title: "Not Found",
           description: "No resident found with this flat number",
           variant: "destructive",
         });
@@ -104,7 +107,7 @@ const GuardDashboard = ({ user }: GuardDashboardProps) => {
         visitor_phone: formData.visitorPhone,
         purpose: formData.purpose,
         flat_number: formData.flatNumber,
-        resident_id: profile.id,
+        resident_id: residentId,
         guard_id: user.id,
         status: "pending",
       });
