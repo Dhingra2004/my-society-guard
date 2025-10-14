@@ -22,17 +22,21 @@ const ResidentsList = () => {
 
   const fetchResidents = async () => {
     try {
+      // First get all resident user IDs
+      const { data: residentRoles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "resident");
+
+      if (rolesError) throw rolesError;
+
+      const residentIds = residentRoles?.map(r => r.user_id) || [];
+
+      // Then fetch profiles only for residents
       const { data, error } = await supabase
         .from("profiles")
-        .select(`
-          id, 
-          full_name, 
-          flat_number, 
-          phone_number, 
-          created_at,
-          user_roles!inner(role)
-        `)
-        .eq("user_roles.role", "resident")
+        .select("id, full_name, flat_number, phone_number, created_at")
+        .in("id", residentIds)
         .order("flat_number", { ascending: true });
 
       if (error) throw error;
