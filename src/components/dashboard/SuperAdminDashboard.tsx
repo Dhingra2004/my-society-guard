@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Users, AlertCircle, Bell, BarChart3, Shield } from "lucide-react";
+import { LogOut, Users, AlertCircle, Bell, BarChart3, Shield, UserPlus } from "lucide-react";
 import NoticeBoard from "@/components/NoticeBoard";
 import ComplaintsList from "@/components/ComplaintsList";
 import ResidentsList from "@/components/ResidentsList";
@@ -77,10 +77,29 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
             </h1>
             <p className="text-muted-foreground mt-2">Full system access & user management</p>
           </div>
-          <Button onClick={handleSignOut} variant="outline">
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Create New User
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Create New User Account</DialogTitle>
+                  <DialogDescription>
+                    Create email and password for Admin, Guard, or Resident users
+                  </DialogDescription>
+                </DialogHeader>
+                <UserManagement />
+              </DialogContent>
+            </Dialog>
+            <Button onClick={handleSignOut} variant="outline">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
