@@ -17,6 +17,29 @@ const Index = () => {
     });
   }, [navigate]);
 
+  // One-time seeding for Super Admin if not present
+  useEffect(() => {
+    const runSeed = async () => {
+      try {
+        const seededFlag = localStorage.getItem('seed_super_admin_done');
+        if (seededFlag) return;
+        const { data, error } = await supabase.functions.invoke('create-user', {
+          body: {
+            email: 'amarpreetpic@gmail.com',
+            password: 'Amar832108',
+            role: 'super_admin',
+          },
+        });
+        // Set flag regardless of outcome to avoid spamming
+        localStorage.setItem('seed_super_admin_done', '1');
+        if (error) console.warn('Seed error:', error.message);
+      } catch (e) {
+        console.warn('Seed exception:', e);
+      }
+    };
+    runSeed();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
       <div className="container mx-auto px-4 py-16">

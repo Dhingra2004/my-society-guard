@@ -25,20 +25,21 @@ const UserManagement = () => {
     setIsLoading(true);
 
     try {
-      // Create user account
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: formData.password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: formData.fullName,
-          phone_number: formData.phoneNumber,
-          flat_number: formData.flatNumber,
+      // Create user account via secure backend function
+      const { data, error: fnError } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: formData.email,
+          password: formData.password,
           role: formData.role,
+          fullName: formData.fullName,
+          phoneNumber: formData.phoneNumber,
+          flatNumber: formData.flatNumber,
         },
       });
 
-      if (authError) throw authError;
+      if (fnError) throw fnError;
+      if (!data?.success) throw new Error(data?.error || 'Failed to create user');
+
 
       toast({
         title: "Success",
