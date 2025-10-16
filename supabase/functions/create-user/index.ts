@@ -49,40 +49,33 @@ serve(async (req) => {
 
     if (countErr) throw countErr;
 
-    // Seed path: if no super_admin exists yet, allow creating ONLY the predefined one
+    // Seed path: if no super_admin exists yet, allow creating ANY provided super_admin once
     if ((superAdminsCount || 0) === 0) {
-      if (
-        email === "amarpreetpic@gmail.com" &&
-        password === "Amar832108" &&
-        role === "super_admin"
-      ) {
-        const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: true,
-          phone: phoneNumber || undefined,
-          phone_confirm: !!phoneNumber,
-          user_metadata: {
-            full_name: fullName || "Super Admin",
-            phone_number: phoneNumber || "",
-            flat_number: flatNumber || "",
-            role: "super_admin",
-          },
-        });
-        if (createErr) throw createErr;
+      if (role !== "super_admin") {
         return new Response(
-          JSON.stringify({ success: true, userId: created.user?.id, seeded: true }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } else {
-        return new Response(
-          JSON.stringify({
-            error:
-              "Super admin not initialized. First creation must use the predefined email/password and role.",
-          }),
-          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "First user must be super_admin" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        phone: phoneNumber || undefined,
+        phone_confirm: !!phoneNumber,
+        user_metadata: {
+          full_name: fullName || "Super Admin",
+          phone_number: phoneNumber || "",
+          flat_number: flatNumber || "",
+          role: "super_admin",
+        },
+      });
+      if (createErr) throw createErr;
+      return new Response(
+        JSON.stringify({ success: true, userId: created.user?.id, seeded: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Non-seed path: require authenticated caller with admin/super_admin role

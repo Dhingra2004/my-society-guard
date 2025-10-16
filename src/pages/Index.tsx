@@ -17,26 +17,20 @@ const Index = () => {
     });
   }, [navigate]);
 
-  // One-time seeding for Super Admin if not present
+  // Seed Super Admin on landing (safe: function only seeds if none exists)
   useEffect(() => {
     const runSeed = async () => {
       try {
-        const seededFlag = localStorage.getItem('seed_super_admin_done');
-        if (seededFlag) return;
-        
         console.log('Attempting to seed super admin...');
         const { data, error } = await supabase.functions.invoke('create-user', {
           body: {
-            email: 'amarpreetpic@gmail.com',
-            password: 'Amar832108',
+            email: 'superadmin@secure.app',
+            password: 'SuperAdmin@12345',
             role: 'super_admin',
-            fullName: 'Super Admin',
+            fullName: 'Super Administrator',
           },
         });
-        
-        // Set flag regardless of outcome to avoid spamming
-        localStorage.setItem('seed_super_admin_done', '1');
-        
+
         if (error) {
           console.warn('Seed error:', error);
         } else {
