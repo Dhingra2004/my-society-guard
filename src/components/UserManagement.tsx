@@ -125,23 +125,17 @@ const UserManagement = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="flatNumber">Flat Number</Label>
-              <Input
-                id="flatNumber"
-                type="text"
-                value={formData.flatNumber}
-                onChange={(e) => setFormData({ ...formData, flatNumber: e.target.value })}
-                placeholder="e.g., A-101"
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <Select
                 value={formData.role}
-                onValueChange={(value: "admin" | "guard" | "resident") =>
-                  setFormData({ ...formData, role: value })
-                }
+                onValueChange={(value: "admin" | "guard" | "resident") => {
+                  setFormData({ 
+                    ...formData, 
+                    role: value,
+                    // Clear flat number for guard and admin roles
+                    flatNumber: value === 'resident' ? formData.flatNumber : ''
+                  });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
@@ -153,6 +147,20 @@ const UserManagement = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.role === 'resident' && (
+              <div className="space-y-2">
+                <Label htmlFor="flatNumber">Flat Number</Label>
+                <Input
+                  id="flatNumber"
+                  type="text"
+                  value={formData.flatNumber}
+                  onChange={(e) => setFormData({ ...formData, flatNumber: e.target.value })}
+                  placeholder="e.g., A-101"
+                  required
+                />
+              </div>
+            )}
           </div>
 
           <Button type="submit" disabled={isLoading} className="w-full">

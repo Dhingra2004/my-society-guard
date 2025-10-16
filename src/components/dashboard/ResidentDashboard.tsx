@@ -6,11 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Bell, AlertCircle, FileText } from "lucide-react";
+import { LogOut, Bell, AlertCircle, FileText, UserPlus } from "lucide-react";
 import VisitorRequests from "@/components/VisitorRequests";
 import ComplaintForm from "@/components/ComplaintForm";
 import ComplaintsList from "@/components/ComplaintsList";
 import NoticeBoard from "@/components/NoticeBoard";
+import PreRegisterGuest from "@/components/PreRegisterGuest";
 
 interface ResidentDashboardProps {
   user: User;
@@ -24,34 +25,64 @@ const ResidentDashboard = ({ user }: ResidentDashboardProps) => {
   useEffect(() => {
     fetchPendingCount();
 
-    // Set up real-time subscription
-    const channel = supabase
-      .channel("resident-visitors")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "visitors",
-          filter: `resident_id=eq.${user.id}`,
-        },
-        () => {
-          fetchPendingCount();
-        }
-      )
-      .subscribe();
+    // Set up real-time subscription for visitors to this resident's flat
+    const setupRealtimeSubscription = async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("flat_number")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile?.flat_number) return;
+
+      const channel = supabase
+        .channel("resident-visitors")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "visitors",
+            filter: `flat_number=eq.${profile.flat_number}`,
+          },
+          () => {
+            fetchPendingCount();
+          }
+        )
+        .subscribe();
+
+      return channel;
+    };
+
+    const channelPromise = setupRealtimeSubscription();
 
     return () => {
-      supabase.removeChannel(channel);
+      channelPromise.then(channel => {
+        if (channel) supabase.removeChannel(channel);
+      });
     };
   }, [user.id]);
 
   const fetchPendingCount = async () => {
     try {
+      // Get user's flat number first
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("flat_number")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profile?.flat_number) {
+        setPendingVisitors(0);
+        return;
+      }
+
+      // Count pending visitors for this flat
       const { count, error } = await supabase
         .from("visitors")
         .select("*", { count: "exact", head: true })
-        .eq("resident_id", user.id)
+        .eq("flat_number", profile.flat_number)
         .eq("status", "pending");
 
       if (error) throw error;
@@ -110,7 +141,7 @@ const ResidentDashboard = ({ user }: ResidentDashboardProps) => {
 
         {/* Main Content */}
         <Tabs defaultValue="visitors" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+          <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
             <TabsTrigger value="visitors" className="relative">
               <Bell className="mr-2 h-4 w-4" />
               Visitors
@@ -119,6 +150,10 @@ const ResidentDashboard = ({ user }: ResidentDashboardProps) => {
                   {pendingVisitors}
                 </span>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="preregister">
+              <UserPlus className="mr-2 h-4 w-4" />
+              Pre-Register
             </TabsTrigger>
             <TabsTrigger value="complaints">
               <AlertCircle className="mr-2 h-4 w-4" />
@@ -132,6 +167,10 @@ const ResidentDashboard = ({ user }: ResidentDashboardProps) => {
 
           <TabsContent value="visitors" className="space-y-6">
             <VisitorRequests userId={user.id} />
+          </TabsContent>
+
+          <TabsContent value="preregister" className="space-y-6">
+            <PreRegisterGuest userId={user.id} />
           </TabsContent>
 
           <TabsContent value="complaints" className="space-y-6">

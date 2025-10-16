@@ -15,6 +15,7 @@ interface Visitor {
   status: string;
   created_at: string;
   approved_at: string | null;
+  expected_date_time?: string;
 }
 
 const VisitorsList = () => {
@@ -108,7 +109,7 @@ const VisitorsList = () => {
                   <TableHead>Flat Number</TableHead>
                   <TableHead>Purpose</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>Date/Time</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -120,7 +121,18 @@ const VisitorsList = () => {
                     <TableCell className="max-w-xs truncate">{visitor.purpose}</TableCell>
                     <TableCell>{getStatusBadge(visitor.status)}</TableCell>
                     <TableCell className="text-sm">
-                      {format(new Date(visitor.created_at), "PPp")}
+                      {visitor.expected_date_time ? (
+                        <div>
+                          <div className="font-medium text-accent">
+                            Expected: {format(new Date(visitor.expected_date_time), "PPp")}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Requested: {format(new Date(visitor.created_at), "PPp")}
+                          </div>
+                        </div>
+                      ) : (
+                        format(new Date(visitor.created_at), "PPp")
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

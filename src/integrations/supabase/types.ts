@@ -134,7 +134,9 @@ export type Database = {
       visitors: {
         Row: {
           approved_at: string | null
+          approved_by_resident_id: string | null
           created_at: string
+          expected_date_time: string | null
           flat_number: string
           guard_id: string
           id: string
@@ -148,7 +150,9 @@ export type Database = {
         }
         Insert: {
           approved_at?: string | null
+          approved_by_resident_id?: string | null
           created_at?: string
+          expected_date_time?: string | null
           flat_number: string
           guard_id: string
           id?: string
@@ -162,7 +166,9 @@ export type Database = {
         }
         Update: {
           approved_at?: string | null
+          approved_by_resident_id?: string | null
           created_at?: string
+          expected_date_time?: string | null
           flat_number?: string
           guard_id?: string
           id?: string

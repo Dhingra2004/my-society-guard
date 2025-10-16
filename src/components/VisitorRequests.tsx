@@ -16,6 +16,9 @@ interface Visitor {
   status: string;
   created_at: string;
   notes?: string;
+  expected_date_time?: string;
+  approved_by_resident_id?: string;
+  approved_by_name?: string;
 }
 
 interface VisitorRequestsProps {
@@ -33,14 +36,48 @@ const VisitorRequests = ({ userId }: VisitorRequestsProps) => {
 
   const fetchVisitors = async () => {
     try {
+      // First get user's flat number
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("flat_number")
+        .eq("id", userId)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profile?.flat_number) {
+        setVisitors([]);
+        return;
+      }
+
+      // Fetch all visitors for this flat
       const { data, error } = await supabase
         .from("visitors")
         .select("*")
-        .eq("resident_id", userId)
+        .eq("flat_number", profile.flat_number)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setVisitors(data || []);
+      
+      // Fetch approver names separately
+      const visitorsWithApprover = await Promise.all(
+        (data || []).map(async (visitor) => {
+          if (visitor.approved_by_resident_id) {
+            const { data: approverProfile } = await supabase
+              .from("profiles")
+              .select("full_name")
+              .eq("id", visitor.approved_by_resident_id)
+              .single();
+            
+            return {
+              ...visitor,
+              approved_by_name: approverProfile?.full_name
+            };
+          }
+          return visitor;
+        })
+      );
+      
+      setVisitors(visitorsWithApprover);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -58,6 +95,7 @@ const VisitorRequests = ({ userId }: VisitorRequestsProps) => {
         .update({
           status: "approved",
           approved_at: new Date().toISOString(),
+          approved_by_resident_id: userId,
         })
         .eq("id", visitorId);
 
@@ -151,7 +189,10 @@ const VisitorRequests = ({ userId }: VisitorRequestsProps) => {
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-4 w-4" />
-                        {format(new Date(visitor.created_at), "PPp")}
+                        {visitor.expected_date_time 
+                          ? `Expected: ${format(new Date(visitor.expected_date_time), "PPp")}`
+                          : `Requested: ${format(new Date(visitor.created_at), "PPp")}`
+                        }
                       </div>
                     </div>
                     {getStatusBadge(visitor.status)}
@@ -207,8 +248,16 @@ const VisitorRequests = ({ userId }: VisitorRequestsProps) => {
                         {visitor.purpose}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {format(new Date(visitor.created_at), "PPp")}
+                        {visitor.expected_date_time 
+                          ? `Expected: ${format(new Date(visitor.expected_date_time), "PPp")}`
+                          : format(new Date(visitor.created_at), "PPp")
+                        }
                       </div>
+                      {visitor.approved_by_name && (
+                        <div className="text-xs text-success">
+                          Approved by: {visitor.approved_by_name}
+                        </div>
+                      )}
                     </div>
                     {getStatusBadge(visitor.status)}
                   </div>
