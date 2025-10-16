@@ -75,7 +75,7 @@ const SuperAdminDashboard = ({ user }: SuperAdminDashboardProps) => {
               <Shield className="h-8 w-8 text-primary" />
               Super Admin Dashboard
             </h1>
-            <p className="text-muted-foreground mt-2">Full system access & user management</p>
+            <p className="text-muted-foreground mt-2">Welcome back, Super Administrator</p>
           </div>
           <div className="flex gap-2">
             <Dialog>
